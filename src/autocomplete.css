@@ -1,0 +1,43 @@
+.suggest {
+  font-weight: bold;
+  color: blue;
+}
+
+.completions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: white;
+  border-radius: 2px;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.25);
+  z-index: 999;
+}
+.completions > li {
+  margin: 0;
+  padding: 0;
+}
+.completions > li > button {
+  box-sizing: border-box;
+  height: 2em;
+  padding: 0.25em 0.5em;
+  margin: 0;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+}
+.completions > li > button:hover {
+  background: #ddd;
+}
+.completions > li > button:focus {
+  background: #ddd;
+  outline: none;
+}
+.completions > li > button > .matched {
+  font-weight: bold;
+  color: black;
+}
+.completions > li > button > * {
+  vertical-align: "middle";
+}
