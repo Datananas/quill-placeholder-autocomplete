@@ -1,5 +1,5 @@
 {
-  "name": "quill-placeholder-autocomplete",
+  "name": "quill-placeholder-autocomplete-module",
   "version": "1.0.0",
   "description": "brings autocomplete to Quill placeholder module",
   "main": "dist/quill_autocomplete-module.min.js",
