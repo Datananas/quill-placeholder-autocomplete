@@ -11,7 +11,7 @@ brings autocomplete to [Quill Placeholder module](https://github.com/jspaine/qui
   yarn add quill-placeholder-autocomplete-module
   ```
   
-  ## Usage
+## Usage
 ```js
 import getPlaceholderModule from 'quill-placeholder-module';
 import PlaceholderAutocomplete from 'quill-placeholder-autocomplete-module';
