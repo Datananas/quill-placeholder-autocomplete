@@ -1,5 +1,5 @@
 // Quill is prepared with SuggestBlot registered
-import { Quill } from './suggestBlot'; 
+export { Quill } from './suggestBlot'; 
 
 /**
  * Utility fonction
@@ -19,5 +19,3 @@ export const h = (tag, attrs, ...children) => {
   });
   return elem;
 };
-
-export { Quill };
