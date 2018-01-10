@@ -14,10 +14,10 @@ brings autocomplete to [Quill Placeholder module](https://github.com/jspaine/qui
 ## Usage
 ```js
 import getPlaceholderModule from 'quill-placeholder-module';
-import PlaceholderAutocomplete from 'quill-placeholder-autocomplete-module';
+import getAutocompleteModule from 'quill-placeholder-autocomplete-module';
 
 Quill.register('modules/placeholder', getPlaceholderModule(Quill));
-Quill.register('modules/autocomplete', PlaceholderAutocomplete);
+Quill.register('modules/autocomplete', getAutocompleteModule(Quill));
 
 const placeholders = [
   {id: 'foo', label: 'Foo'},
