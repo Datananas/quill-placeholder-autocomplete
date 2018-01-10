@@ -1,6 +1,3 @@
-// Quill is prepared with SuggestBlot registered
-export { Quill } from './suggestBlot'; 
-
 /**
  * Utility fonction
  * Create DOM elements/trees with functional approach
