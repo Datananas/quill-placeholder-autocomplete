@@ -6,7 +6,7 @@ const config = {
   entry: ['./src/autocomplete-module.js', './src/autocomplete.css'],
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'quill-placeholder-autocomplete.min.js',
+    filename: 'quill-placeholder-autocomplete-module.min.js',
     library: 'QuillPlaceholderAutocomplete',
     libraryExport: 'default',
     libraryTarget: 'umd'

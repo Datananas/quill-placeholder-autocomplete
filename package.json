@@ -2,7 +2,7 @@
   "name": "quill-placeholder-autocomplete-module",
   "version": "1.0.0",
   "description": "brings autocomplete to Quill placeholder module",
-  "main": "dist/quill_autocomplete-module.min.js",
+  "main": "dist/quill-placeholder-autocomplete-module.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
