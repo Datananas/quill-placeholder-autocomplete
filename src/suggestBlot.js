@@ -36,5 +36,5 @@ export default (Quill) => {
   SuggestBlot.className = 'suggest';
   
   return SuggestBlot;
-}
+};
 

@@ -111,7 +111,7 @@ export default (Quill) => {
     handleArrow() {
       if (!this.open)
         return true;
-      this.buttons[ 0 ].focus();
+      this.buttons[0].focus();
     }
 
     /**
@@ -123,7 +123,7 @@ export default (Quill) => {
     handleEnterTab() {
       if (!this.open)
         return true;
-      this.close(this.placeholders[ 0 ]);
+      this.close(this.placeholders[0]);
     }
 
     /**
@@ -190,10 +190,10 @@ export default (Quill) => {
       const handler = (i, placeholder) => (event) => {
         if (event.key === 'ArrowDown' || event.keyCode === 40) {
           event.preventDefault();
-          buttons[ Math.min(buttons.length - 1, i + 1) ].focus();
+          buttons[Math.min(buttons.length - 1, i + 1)].focus();
         } else if (event.key === 'ArrowUp' || event.keyCode === 38) {
           event.preventDefault();
-          buttons[ Math.max(0, i - 1) ].focus();
+          buttons[Math.max(0, i - 1)].focus();
         } else if (event.key === 'Enter' || event.keyCode === 13
           || event.key === ' ' || event.keyCode === 32
           || event.key === 'Tab' || event.keyCode === 9) {
@@ -211,12 +211,12 @@ export default (Quill) => {
             h('span', { className: 'matched' }, '#' + placeholder.label.slice(0, this.query.length)),
             h('span', { className: 'unmatched' }, placeholder.label.slice(this.query.length))));
         this.container.appendChild(li);
-        buttons[ i ] = li.firstChild;
+        buttons[i] = li.firstChild;
         // event handlers will be garbage-collected with button on each re-render
-        buttons[ i ].addEventListener('keydown', handler(i, placeholder));
-        buttons[ i ].addEventListener('mousedown', () => this.close(placeholder));
-        buttons[ i ].addEventListener('focus', () => this.focusedButton = i);
-        buttons[ i ].addEventListener('unfocus', () => this.focusedButton = null);
+        buttons[i].addEventListener('keydown', handler(i, placeholder));
+        buttons[i].addEventListener('mousedown', () => this.close(placeholder));
+        buttons[i].addEventListener('focus', () => this.focusedButton = i);
+        buttons[i].addEventListener('unfocus', () => this.focusedButton = null);
       });
       this.container.style.display = 'block';
     }
@@ -250,5 +250,5 @@ export default (Quill) => {
   }
 
   return AutoComplete;
-}
+};
 
