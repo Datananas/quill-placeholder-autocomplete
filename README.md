@@ -1,5 +1,5 @@
 # quill-placeholder-autocomplete
-brings autocomplete to [Quill Placeholder module](https://github.com/jspaine/quill-placeholder-module)
+brings autocomplete to [quill-placeholder-module](https://github.com/jspaine/quill-placeholder-module)
 
 ## Install
 + using NPM:
