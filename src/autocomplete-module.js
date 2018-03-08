@@ -64,7 +64,7 @@ export default (Quill) => {
         format: [ 'suggest' ]
       }, this.handleEscape.bind(this));
 
-      quill.mentionHandler = this.handleEnterTab.bind(this);
+      quill.suggestHandler = this.handleEnterTab.bind(this);
     }
 
     /**
