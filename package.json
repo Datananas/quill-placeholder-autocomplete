@@ -1,6 +1,6 @@
 {
   "name": "quill-placeholder-autocomplete-module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "brings autocomplete to Quill placeholder module",
   "main": "dist/quill-placeholder-autocomplete-module.min.js",
   "scripts": {
@@ -31,7 +31,7 @@
     "eslint": "^4.15.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "quill": "^1.3.4",
-    "uglifyjs-webpack-plugin": "^1.1.6",
+    "uglifyjs-webpack-plugin": "^1.1.8",
     "webpack": "^3.10.0"
   },
   "dependencies": {}
