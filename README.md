@@ -4,11 +4,11 @@ brings autocomplete to [quill-placeholder-module](https://github.com/jspaine/qui
 ## Install
 + using NPM:
   ```
-  npm install --save quill-placeholder-autocomplete-module
+  npm install --save quill-placeholder-autocomplete-module quill-placeholder-module
   ```
 + using yarn:
   ```
-  yarn add quill-placeholder-autocomplete-module
+  yarn add quill-placeholder-autocomplete-module quill-placeholder-module
   ```
   
 ## Usage
@@ -16,7 +16,9 @@ brings autocomplete to [quill-placeholder-module](https://github.com/jspaine/qui
 import getPlaceholderModule from 'quill-placeholder-module';
 import getAutocompleteModule from 'quill-placeholder-autocomplete-module';
 
-Quill.register('modules/placeholder', getPlaceholderModule(Quill));
+Quill.register('modules/placeholder', getPlaceholderModule(Quill,  { 
+  className: 'ql-placeholder-content',  // default 
+}));
 Quill.register('modules/autocomplete', getAutocompleteModule(Quill));
 
 const placeholders = [
@@ -29,7 +31,6 @@ var quill = new Quill('#editor', {
     toolbar: {container: `#toolbar`},
     placeholder: {
       delimiters: ['{', '}'],               // default
-      className: 'ql-placeholder-content',  // default
       placeholders
     },
     autocomplete: {
