@@ -53,7 +53,7 @@ export default (Quill) => {
         // intercept AltGr in all browser except IE8
         // source: https://stackoverflow.com/questions/10657346/detect-alt-gr-alt-graph-modifier-on-key-press
         altKey: true,
-        ctrlKey: true
+        ctrlKey: null // more accepting
       }, this.onHashKey.bind(this));
 
       quill.keyboard.addBinding({
