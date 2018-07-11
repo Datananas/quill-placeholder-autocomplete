@@ -45,11 +45,15 @@ export default (Quill) => {
       this.focusedButton = null;
       this.buttons = [];
       this.placeholders = [];
+      this.altKeyDown = false;
 
       quill.keyboard.addBinding({
-        // TODO: Once Quill supports using event.key (#1091) use that instead of alt-3
-        key: 51,  // 3
-        altKey: true
+        // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
+        key: 51,  // '3' keyCode
+        // intercept AltGr in all browser except IE8
+        // source: https://stackoverflow.com/questions/10657346/detect-alt-gr-alt-graph-modifier-on-key-press
+        altKey: true,
+        ctrlKey: true
       }, this.onHashKey.bind(this));
 
       quill.keyboard.addBinding({
