@@ -80,7 +80,7 @@ export default (Quill) => {
         format: [ 'suggest' ]
       }, this.handleEscape.bind(this));
 
-      quill.suggestHandler = this.handleEnterTab.bind(this);
+      quill.suggestHandler = this.onHashKey.bind(this);
     }
 
     /**
@@ -114,6 +114,10 @@ export default (Quill) => {
       this.quill.on('text-change', this.onTextChange);
       // binding event handler to handle user want to quit autocompletions
       this.quill.once('selection-change', this.onSelectionChange);
+      this.quill.root.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter')
+          this.handleEnterTab();
+      }, { once: true });
       this.update();
       this.onOpen && this.onOpen();
     }
