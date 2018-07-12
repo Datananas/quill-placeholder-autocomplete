@@ -32,7 +32,6 @@ export default (Quill) => {
         this.container = container;
       }
       this.container.classList.add('ql-autocomplete-menu', 'completions');
-
       this.container.style.position = 'absolute';
       this.container.style.display = 'none';
 
@@ -45,16 +44,29 @@ export default (Quill) => {
       this.focusedButton = null;
       this.buttons = [];
       this.placeholders = [];
-      this.altKeyDown = false;
+      this.toolbarHeight = 0;
 
+      // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
       quill.keyboard.addBinding({
-        // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
         key: 51,  // '3' keyCode
-        // intercept AltGr in all browser except IE8
-        // source: https://stackoverflow.com/questions/10657346/detect-alt-gr-alt-graph-modifier-on-key-press
         altKey: true,
-        ctrlKey: null // more accepting
+        ctrlKey: null // both
       }, this.onHashKey.bind(this));
+
+      quill.root.addEventListener('keydown', (event) => {
+        if (event.defaultPrevented)
+          return; // Do nothing if the event was already processed
+
+        if (event.key === '#') {
+          if (!this.toolbarHeight)
+            this.toolbarHeight = this.quill.getModule('toolbar').container.offsetHeight;
+          this.onHashKey(this.quill.getSelection());
+        } else
+          return; // Quit when this doesn't handle the key event.
+
+        // Cancel the default action to avoid it being handled twice
+        event.preventDefault();
+      }, true);
 
       quill.keyboard.addBinding({
         key: 40,  // ArrowDown
@@ -79,7 +91,7 @@ export default (Quill) => {
      * @returns {Boolean} can stop event propagation
      * @memberof AutoComplete
      */
-    onHashKey(range, context) {
+    onHashKey(range, _) {
       // prevent from opening twice
       // NOTE: returning true stops event propagation in Quill
       if (this.open)
@@ -95,7 +107,7 @@ export default (Quill) => {
 
       this.hashIndex = range.index;
       this.container.style.left = hashSignBounds.left + 'px';
-      this.container.style.top = hashSignBounds.top + hashSignBounds.height + 'px';
+      this.container.style.top = hashSignBounds.top + hashSignBounds.height + this.toolbarHeight + 2 + 'px';
       this.open = true;
       this.quill.suggestsDialogOpen = true;
       // binding completions event handler to handle user query
