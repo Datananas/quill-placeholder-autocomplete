@@ -1,3 +1,4 @@
+import FuzzySet from 'fuzzyset.js';
 import { h } from './utils';
 import getSuggestBlot from './suggestBlot';
 
@@ -34,7 +35,7 @@ export default (Quill) => {
       this.container.classList.add('ql-autocomplete-menu', 'completions');
       this.container.style.position = 'absolute';
       this.container.style.display = 'none';
-
+      // prepare handlers and bind/unbind them when appropriate
       this.onSelectionChange = this.maybeUnfocus.bind(this);
       this.onTextChange = this.update.bind(this);
 
@@ -43,6 +44,7 @@ export default (Quill) => {
       this.hashIndex = null;
       this.focusedButton = null;
       this.buttons = [];
+      this.matchedPlaceholders = [];
       this.placeholders = [];
       this.toolbarHeight = 0;
 
@@ -80,18 +82,17 @@ export default (Quill) => {
         format: [ 'suggest' ]
       }, this.handleEscape.bind(this));
 
-      quill.suggestHandler = this.onHashKey.bind(this);
+      // quill.suggestHandler = this.onHashKey.bind(this);
     }
 
     /**
      * Called when user entered `#`
      * prepare editor and open completions list
      * @param {Quill.RangeStatic} range concerned region
-     * @param {any} context editor context
      * @returns {Boolean} can stop event propagation
      * @memberof AutoComplete
      */
-    onHashKey(range, _) {
+    onHashKey(range) {
       // prevent from opening twice
       // NOTE: returning true stops event propagation in Quill
       if (this.open)
@@ -103,17 +104,20 @@ export default (Quill) => {
       // insert a temporary SuggestBlot
       this.quill.insertText(range.index, '#', 'suggest', '@@placeholder', Quill.sources.USER);
       const hashSignBounds = this.quill.getBounds(range.index);
+      const rest = this.toolbarHeight + 2;
       this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
 
       this.hashIndex = range.index;
       this.container.style.left = hashSignBounds.left + 'px';
-      this.container.style.top = hashSignBounds.top + hashSignBounds.height + this.toolbarHeight + 2 + 'px';
+      this.container.style.top = hashSignBounds.top + hashSignBounds.height + rest + 'px';
       this.open = true;
       this.quill.suggestsDialogOpen = true;
       // binding completions event handler to handle user query
       this.quill.on('text-change', this.onTextChange);
       // binding event handler to handle user want to quit autocompletions
       this.quill.once('selection-change', this.onSelectionChange);
+      // binding handler to react when user pressed Enter 
+      // when autocomplete UI is in default state
       this.quill.root.addEventListener('keydown', (event) => {
         if (event.key === 'Enter')
           this.handleEnterTab();
@@ -143,7 +147,7 @@ export default (Quill) => {
     handleEnterTab() {
       if (!this.open)
         return true;
-      this.close(this.placeholders[0]);
+      this.close(this.matchedPlaceholders[0]);
     }
 
     /**
@@ -172,17 +176,24 @@ export default (Quill) => {
      */
     update() {
       const sel = this.quill.getSelection().index;
+      const placeholders = this.getPlaceholders();
+      const labels = placeholders.map(({ label }) => label.toLowerCase());
+      const fs = FuzzySet(labels, false);
+      let labelResults = null;
       // Deleted the at character
       if (this.hashIndex >= sel) {
         return this.close(null);
       }
       this.originalQuery = this.quill.getText(this.hashIndex + 1, sel - this.hashIndex - 1);
       this.query = this.originalQuery.toLowerCase();
-      // TODO: Should use fuse.js or similar fuzzy-matcher
-      this.placeholders = this.getPlaceholders()
-        .filter(ph => ph.label.toLowerCase().startsWith(this.query))
-        .sort((ph1, ph2) => ph1.label > ph2.label);
-      this.renderCompletions(this.placeholders);
+      if (this.query.length)
+        labelResults = fs.get(this.query);
+      labelResults = labelResults 
+          ? labelResults.map(([ , label ]) => label)
+          : labels;
+      this.matchedPlaceholders = placeholders
+        .filter(({ label }) => labelResults.indexOf(label) !== -1);
+      this.renderCompletions(this.matchedPlaceholders);
     }
 
     /**
@@ -224,12 +235,27 @@ export default (Quill) => {
           this.close();
         }
       };
+      const regex = new RegExp('^(.*)('+this.query+')(.*)$');
+
       // prepare buttons corresponding to each placeholder
       placeholders.forEach((placeholder, i) => {
+        const { label } = placeholder;
+        const match = label.match(regex) || [ null, label ];
+        const elements = match.slice(1)
+          .map((str, i) => { 
+            if (!str.length)
+              return null;
+
+            return h(
+              'span', 
+              { className: i === 1 ? 'matched' : 'unmatched' }, 
+             `${i === 0 ? '#' : ''}${str}`
+            );
+          }).filter(elem => elem);
         const li = h('li', {},
-          h('button', { type: 'button' },
-            h('span', { className: 'matched' }, '#' + placeholder.label.slice(0, this.query.length)),
-            h('span', { className: 'unmatched' }, placeholder.label.slice(this.query.length))));
+          h('button', { type: 'button' }, ...elements)
+        );
+
         this.container.appendChild(li);
         buttons[i] = li.firstChild;
         // event handlers will be garbage-collected with button on each re-render
