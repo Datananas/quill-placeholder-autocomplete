@@ -47,11 +47,11 @@ export default (Quill) => {
       this.toolbarHeight = 0;
 
       // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
-      quill.keyboard.addBinding({
-        key: 51,  // '3' keyCode
-        altKey: true,
-        ctrlKey: null // both
-      }, this.onHashKey.bind(this));
+      // quill.keyboard.addBinding({
+      //   key: 51,  // '3' keyCode
+      //   altKey: true,
+      //   ctrlKey: null // both
+      // }, this.onHashKey.bind(this));
 
       quill.root.addEventListener('keydown', (event) => {
         if (event.defaultPrevented)
