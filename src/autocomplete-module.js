@@ -19,11 +19,12 @@ export default (Quill) => {
      * @param {Object} options module options
      * @memberof AutoComplete
      */
-    constructor(quill, { onClose, onOpen, getPlaceholders, container }) {
+    constructor(quill, { onClose, onOpen, getPlaceholders, fetchPlaceholders, container }) {
       this.quill = quill;
       this.onClose = onClose;
       this.onOpen = onOpen;
       this.getPlaceholders = getPlaceholders;
+      this.fetchPlaceholders = fetchPlaceholders;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
       } else if (container === undefined) {
@@ -45,8 +46,12 @@ export default (Quill) => {
       this.focusedButton = null;
       this.buttons = [];
       this.matchedPlaceholders = [];
-      this.placeholders = [];
       this.toolbarHeight = 0;
+
+      this.suggestKeydownHandler = function(event) {
+        if (event.key === 'Enter')
+          this.handleEnterTab();
+      }.bind(this);
 
       // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
       // quill.keyboard.addBinding({
@@ -82,7 +87,7 @@ export default (Quill) => {
         format: [ 'suggest' ]
       }, this.handleEscape.bind(this));
 
-      // quill.suggestHandler = this.onHashKey.bind(this);
+      quill.suggestHandler = this.onHashKey.bind(this);
     }
 
     /**
@@ -118,10 +123,7 @@ export default (Quill) => {
       this.quill.once('selection-change', this.onSelectionChange);
       // binding handler to react when user pressed Enter 
       // when autocomplete UI is in default state
-      this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter')
-          this.handleEnterTab();
-      }, { once: true });
+      this.quill.root.addEventListener('keydown', this.suggestKeydownHandler);
       this.update();
       this.onOpen && this.onOpen();
     }
@@ -174,21 +176,37 @@ export default (Quill) => {
      * @returns {any} eventually close list and quit function
      * @memberof AutoComplete
      */
-    update() {
+    async update() {
       const sel = this.quill.getSelection().index;
       const placeholders = this.getPlaceholders();
       const labels = placeholders.map(({ label }) => label.toLowerCase());
       const fs = FuzzySet(labels, false);
       let labelResults = null;
-      // Deleted the at character
+      // user deleted the '#' character
       if (this.hashIndex >= sel) {
         return this.close(null);
       }
       this.originalQuery = this.quill.getText(this.hashIndex + 1, sel - this.hashIndex - 1);
       this.query = this.originalQuery.toLowerCase();
-      if (this.query.length)
+      if (this.query.length) {
+        // handle promise fetching custom placeholders
+        if (this.fetchPlaceholders && this.query.length > 4) {
+          const results = await this.fetchPlaceholders(this.query);
+          
+          if(results && results.length)
+            results.forEach((ph) => {
+              const notExisting = labels.indexOf(ph.label) === -1;
+
+              if (notExisting) {
+                fs.add(ph.label);
+                placeholders.push(ph);
+                labels.push(ph.label);
+              }
+            });
+        }
         labelResults = fs.get(this.query);
-      labelResults = labelResults 
+      }
+      labelResults = labelResults
           ? labelResults.map(([ , label ]) => label)
           : labels;
       this.matchedPlaceholders = placeholders
@@ -278,6 +296,7 @@ export default (Quill) => {
       // detaching event handlers (user query finished)
       this.quill.off('selection-change', this.onSelectionChange);
       this.quill.off('text-change', this.onTextChange);
+      this.quill.root.removeEventListener('keydown', this.suggestKeydownHandler);
       const delta = new Delta()
         .retain(this.hashIndex)
         .delete(this.query.length + 1);
