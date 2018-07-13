@@ -1,6 +1,9 @@
 # quill-placeholder-autocomplete
 brings autocomplete to [quill-placeholder-module](https://github.com/jspaine/quill-placeholder-module)
 
+## CI status
+[ ![Codeship Status for Datananas/quill-placeholder-autocomplete](https://app.codeship.com/projects/19a30040-d83b-0135-4786-2a3c011fd6eb/status?branch=master)](https://app.codeship.com/projects/263594)
+
 ## Install
 + using NPM:
   ```
@@ -35,7 +38,7 @@ var quill = new Quill('#editor', {
     },
     autocomplete: {
       getPlaceholders: () => placeholders       // factory
-      container: '#completions',               // can also be return of `document.querySelector` or keeped to `undefined`
+      container: '#completions',               // can also be return of `document.querySelector` or keeped `undefined`
       onOpen: () => console.log('opened'),    // optional
       onClose: (placeholder) => console.log('user choosed:', placeholder),  //optional
     }
