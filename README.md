@@ -13,14 +13,14 @@ brings autocomplete to [quill-placeholder-module](https://github.com/jspaine/qui
   ```
   yarn add quill-placeholder-autocomplete-module quill-placeholder-module
   ```
-  
+
 ## Usage
 ```js
 import getPlaceholderModule from 'quill-placeholder-module';
 import getAutocompleteModule from 'quill-placeholder-autocomplete-module';
 
-Quill.register('modules/placeholder', getPlaceholderModule(Quill,  { 
-  className: 'ql-placeholder-content',  // default 
+Quill.register('modules/placeholder', getPlaceholderModule(Quill,  {
+  className: 'ql-placeholder-content',  // default
 }));
 Quill.register('modules/autocomplete', getAutocompleteModule(Quill));
 
@@ -39,8 +39,12 @@ var quill = new Quill('#editor', {
     autocomplete: {
       getPlaceholders: () => placeholders       // factory
       container: '#completions',               // can also be return of `document.querySelector` or keeped `undefined`
-      onOpen: () => console.log('opened'),    // optional
-      onClose: (placeholder) => console.log('user choosed:', placeholder),  //optional
+      onOpen: () => console.log('opened'),                                      // optional
+      onClose: (placeholder) => console.log('user choosed:', placeholder),      // optional
+      fetchPlaceholders: (query) => fetch(...).then(...)                        // optional
+      onFetchStarted: (query) => console.log('user searching for:', query),     // optional
+      onFetchFinished: (results) => console.log('possible results:', results),  // optional
+      debounceTime: 400   // 0: disabled (by default)
     }
   },
   placeholder: 'Compose an epic...',

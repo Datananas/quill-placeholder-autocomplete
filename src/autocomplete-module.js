@@ -1,6 +1,8 @@
 import FuzzySet from 'fuzzyset.js';
+import debounce from 'lodash.debounce';
 import { h } from './utils';
 import getSuggestBlot from './suggestBlot';
+import { debounceTime } from '../node_modules/rxjs/operator/debounceTime';
 
 export default (Quill) => {
   const Delta = Quill.import('delta');
@@ -19,10 +21,23 @@ export default (Quill) => {
      * @param {Object} options module options
      * @memberof AutoComplete
      */
-    constructor(quill, { onClose, onOpen, getPlaceholders, fetchPlaceholders, container }) {
+    constructor(quill, {
+      onOpen,
+      onClose,
+      getPlaceholders,
+      fetchPlaceholders,
+      onFetchStarted,
+      onFetchFinished,
+      container,
+      debounceTime = 0
+    }) {
+      const bindedUpdateFn = this.update.bind(this);
+
       this.quill = quill;
       this.onClose = onClose;
       this.onOpen = onOpen;
+      this.onFetchStarted = onFetchStarted;
+      this.onFetchFinished = onFetchFinished;
       this.getPlaceholders = getPlaceholders;
       this.fetchPlaceholders = fetchPlaceholders;
       if (typeof container === 'string') {
@@ -38,7 +53,8 @@ export default (Quill) => {
       this.container.style.display = 'none';
       // prepare handlers and bind/unbind them when appropriate
       this.onSelectionChange = this.maybeUnfocus.bind(this);
-      this.onTextChange = this.update.bind(this);
+      this.onTextChange = debounceTime
+        ? debounce(bindedUpdateFn, debounceTime) : bindedUpdateFn;
 
       this.open = false;
       this.quill.suggestsDialogOpen = false;
@@ -121,7 +137,7 @@ export default (Quill) => {
       this.quill.on('text-change', this.onTextChange);
       // binding event handler to handle user want to quit autocompletions
       this.quill.once('selection-change', this.onSelectionChange);
-      // binding handler to react when user pressed Enter 
+      // binding handler to react when user pressed Enter
       // when autocomplete UI is in default state
       this.quill.root.addEventListener('keydown', this.suggestKeydownHandler);
       this.update();
@@ -191,8 +207,10 @@ export default (Quill) => {
       if (this.query.length) {
         // handle promise fetching custom placeholders
         if (this.fetchPlaceholders && this.query.length > 4) {
+          this.onFetchStarted && this.onFetchStarted(this.query);
           const results = await this.fetchPlaceholders(this.query);
-          
+          this.onFetchFinished && this.onFetchFinished(results);
+
           if(results && results.length)
             results.forEach((ph) => {
               const notExisting = labels.indexOf(ph.label) === -1;
@@ -260,13 +278,13 @@ export default (Quill) => {
         const { label } = placeholder;
         const match = label.match(regex) || [ null, label ];
         const elements = match.slice(1)
-          .map((str, i) => { 
+          .map((str, i) => {
             if (!str.length)
               return null;
 
             return h(
-              'span', 
-              { className: i === 1 ? 'matched' : 'unmatched' }, 
+              'span',
+              { className: i === 1 ? 'matched' : 'unmatched' },
              `${i === 0 ? '#' : ''}${str}`
             );
           }).filter(elem => elem);
