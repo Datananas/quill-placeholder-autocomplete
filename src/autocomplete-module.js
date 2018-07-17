@@ -2,7 +2,6 @@ import FuzzySet from 'fuzzyset.js';
 import debounce from 'lodash.debounce';
 import { h } from './utils';
 import getSuggestBlot from './suggestBlot';
-import { debounceTime } from '../node_modules/rxjs/operator/debounceTime';
 
 export default (Quill) => {
   const Delta = Quill.import('delta');
@@ -29,7 +28,8 @@ export default (Quill) => {
       onFetchStarted,
       onFetchFinished,
       container,
-      debounceTime = 0
+      debounceTime = 0,
+      triggerKey = '#'
     }) {
       const bindedUpdateFn = this.update.bind(this);
 
@@ -40,6 +40,7 @@ export default (Quill) => {
       this.onFetchFinished = onFetchFinished;
       this.getPlaceholders = getPlaceholders;
       this.fetchPlaceholders = fetchPlaceholders;
+      this.triggerKey = triggerKey;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
       } else if (container === undefined) {
@@ -69,6 +70,18 @@ export default (Quill) => {
           this.handleEnterTab();
       }.bind(this);
 
+      quill.suggestHandler = this.onHashKey.bind(this);
+
+      this.initBindings();
+    }
+
+    /**
+     * initialiase main quill editor bindings
+     *
+     * @memberof AutoComplete
+     */
+    initBindings() {
+      const { quill } = this;
       // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
       // quill.keyboard.addBinding({
       //   key: 51,  // '3' keyCode
@@ -80,10 +93,10 @@ export default (Quill) => {
         if (event.defaultPrevented)
           return; // Do nothing if the event was already processed
 
-        if (event.key === '#') {
+        if (event.key === this.triggerKey) {
           if (!this.toolbarHeight)
-            this.toolbarHeight = this.quill.getModule('toolbar').container.offsetHeight;
-          this.onHashKey(this.quill.getSelection());
+            this.toolbarHeight = quill.getModule('toolbar').container.offsetHeight;
+          this.onHashKey(quill.getSelection());
         } else
           return; // Quit when this doesn't handle the key event.
 
@@ -102,8 +115,6 @@ export default (Quill) => {
         collapsed: null,
         format: [ 'suggest' ]
       }, this.handleEscape.bind(this));
-
-      quill.suggestHandler = this.onHashKey.bind(this);
     }
 
     /**
@@ -119,16 +130,18 @@ export default (Quill) => {
       if (this.open)
         return true;
 
+      const { index, length } = range;
+
       if (range.length > 0) {
-        this.quill.deleteText(range.index, range.length, Quill.sources.USER);
+        this.quill.deleteText(index, length, Quill.sources.USER);
       }
       // insert a temporary SuggestBlot
-      this.quill.insertText(range.index, '#', 'suggest', '@@placeholder', Quill.sources.USER);
-      const hashSignBounds = this.quill.getBounds(range.index);
+      this.quill.insertText(index, this.triggerKey, 'suggest', '@@placeholder', Quill.sources.API);
+      const hashSignBounds = this.quill.getBounds(index);
       const rest = this.toolbarHeight + 2;
-      this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
+      this.quill.setSelection(index + 1, Quill.sources.SILENT);
 
-      this.hashIndex = range.index;
+      this.hashIndex = index;
       this.container.style.left = hashSignBounds.left + 'px';
       this.container.style.top = hashSignBounds.top + hashSignBounds.height + rest + 'px';
       this.open = true;
@@ -189,7 +202,6 @@ export default (Quill) => {
     /**
      * Completions updater
      * analyze user query && update list and DOM
-     * @returns {any} eventually close list and quit function
      * @memberof AutoComplete
      */
     update() {
@@ -197,25 +209,26 @@ export default (Quill) => {
       const placeholders = this.getPlaceholders();
       const labels = placeholders.map(({ label }) => label.toLowerCase());
       const fs = FuzzySet(labels, false);
-      let labelResults = null;
       // user deleted the '#' character
       if (this.hashIndex >= sel) {
-        return this.close(null);
+        this.close(null);
+        return;
       }
       this.originalQuery = this.quill.getText(this.hashIndex + 1, sel - this.hashIndex - 1);
       this.query = this.originalQuery.toLowerCase();
-      if (this.query.length) {
-        // handle promise fetching custom placeholders
-        if (this.fetchPlaceholders && this.query.length > 4)
-          this.handleAsyncFetching(placeholders, labels, fs)
-            .then(this.handleUpdateEnd.bind(this));
+      // handle promise fetching custom placeholders
+      if (this.fetchPlaceholders && this.query.length && this.query.length > 4) {
+        this.handleAsyncFetching(placeholders, labels, fs)
+          .then(this.handleUpdateEnd.bind(this));
+        return;
       }
+
       this.handleUpdateEnd({ placeholders, labels, fs });
     }
 
     /**
      *  End of loop for update method:
-     *    use data results to render completions list
+     *    use data results to prepare and trigger render of completions list
      *
      * @param {Object}  parsingData   { placeholders, labels, fs }
      * @memberof AutoComplete
@@ -316,7 +329,7 @@ export default (Quill) => {
             return h(
               'span',
               { className: i === 1 ? 'matched' : 'unmatched' },
-             `${i === 0 ? '#' : ''}${str}`
+              str
             );
           }).filter(elem => elem);
         const li = h('li', {},

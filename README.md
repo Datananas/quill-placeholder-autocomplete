@@ -20,7 +20,7 @@ import getPlaceholderModule from 'quill-placeholder-module';
 import getAutocompleteModule from 'quill-placeholder-autocomplete-module';
 
 Quill.register('modules/placeholder', getPlaceholderModule(Quill,  {
-  className: 'ql-placeholder-content',  // default
+  className: 'ql-placeholder-content',        // default
 }));
 Quill.register('modules/autocomplete', getAutocompleteModule(Quill));
 
@@ -33,18 +33,19 @@ var quill = new Quill('#editor', {
   modules: {
     toolbar: {container: `#toolbar`},
     placeholder: {
-      delimiters: ['{', '}'],               // default
+      delimiters: ['{', '}'],                   // default
       placeholders
     },
     autocomplete: {
       getPlaceholders: () => placeholders       // factory
-      container: '#completions',               // can also be return of `document.querySelector` or keeped `undefined`
+      container: '#completions',                // can also be return of `document.querySelector` or keeped `undefined`
+      triggerKey: '#',                          // default
+      debounceTime: 0,                          // 0: disabled (default)
       onOpen: () => console.log('opened'),                                      // optional
       onClose: (placeholder) => console.log('user choosed:', placeholder),      // optional
       fetchPlaceholders: (query) => fetch(...).then(...)                        // optional
       onFetchStarted: (query) => console.log('user searching for:', query),     // optional
       onFetchFinished: (results) => console.log('possible results:', results),  // optional
-      debounceTime: 400   // 0: disabled (by default)
     }
   },
   placeholder: 'Compose an epic...',
