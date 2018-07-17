@@ -192,7 +192,7 @@ export default (Quill) => {
      * @returns {any} eventually close list and quit function
      * @memberof AutoComplete
      */
-    async update() {
+    update() {
       const sel = this.quill.getSelection().index;
       const placeholders = this.getPlaceholders();
       const labels = placeholders.map(({ label }) => label.toLowerCase());
@@ -206,9 +206,47 @@ export default (Quill) => {
       this.query = this.originalQuery.toLowerCase();
       if (this.query.length) {
         // handle promise fetching custom placeholders
-        if (this.fetchPlaceholders && this.query.length > 4) {
-          this.onFetchStarted && this.onFetchStarted(this.query);
-          const results = await this.fetchPlaceholders(this.query);
+        if (this.fetchPlaceholders && this.query.length > 4)
+          this.handleAsyncFetching(placeholders, labels, fs)
+            .then(this.handleUpdateEnd.bind(this));
+      }
+      this.handleUpdateEnd({ placeholders, labels, fs });
+    }
+
+    /**
+     *  End of loop for update method:
+     *    use data results to render completions list
+     *
+     * @param {Object}  parsingData   { placeholders, labels, fs }
+     * @memberof AutoComplete
+     */
+    handleUpdateEnd({ placeholders, labels, fs }) {
+      let labelResults = fs.get(this.query);
+      // FuzzySet can return a scores array or `null`
+      labelResults = labelResults
+          ? labelResults.map(([ , label ]) => label)
+          : labels;
+      this.matchedPlaceholders = placeholders
+        .filter(({ label }) => labelResults.indexOf(label) !== -1);
+      this.renderCompletions(this.matchedPlaceholders);
+    }
+
+    /**
+     *  Async handler:
+     *    try to fetch custom placeholders asynchronously.
+     *    in case of match, add results to internal data
+     *
+     * @param   {Array}     placeholders  static placeholders from getter call
+     * @param   {Array}     labels        labels extracted from labels for caching purpose
+     * @param   {FuzzySet}  fs            fuzzy set matcher
+     * @returns {Object}                  same references passing to callback
+     * @memberof AutoComplete
+     */
+    handleAsyncFetching(placeholders, labels, fs) {
+      this.onFetchStarted && this.onFetchStarted(this.query);
+
+      return this.fetchPlaceholders(this.query)
+        .then((results) => {
           this.onFetchFinished && this.onFetchFinished(results);
 
           if(results && results.length)
@@ -221,15 +259,8 @@ export default (Quill) => {
                 labels.push(ph.label);
               }
             });
-        }
-        labelResults = fs.get(this.query);
-      }
-      labelResults = labelResults
-          ? labelResults.map(([ , label ]) => label)
-          : labels;
-      this.matchedPlaceholders = placeholders
-        .filter(({ label }) => labelResults.indexOf(label) !== -1);
-      this.renderCompletions(this.matchedPlaceholders);
+          return { placeholders, labels, fs };
+        });
     }
 
     /**
