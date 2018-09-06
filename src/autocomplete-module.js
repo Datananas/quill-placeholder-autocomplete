@@ -65,9 +65,11 @@ export default (Quill) => {
       this.matchedPlaceholders = [];
       this.toolbarHeight = 0;
 
-      this.suggestKeydownHandler = function(event) {
-        if (event.key === 'Enter')
+      this.suggestEnterDownHandler = function(event) {
+        if (event.key === 'Enter') {
           this.handleEnterTab();
+          event.preventDefault();
+        }
       }.bind(this);
 
       quill.suggestHandler = this.onHashKey.bind(this);
@@ -152,7 +154,7 @@ export default (Quill) => {
       this.quill.once('selection-change', this.onSelectionChange);
       // binding handler to react when user pressed Enter
       // when autocomplete UI is in default state
-      this.quill.root.addEventListener('keydown', this.suggestKeydownHandler);
+      this.quill.root.addEventListener('keydown', this.suggestEnterDownHandler);
       this.update();
       this.onOpen && this.onOpen();
     }
@@ -205,6 +207,9 @@ export default (Quill) => {
      * @memberof AutoComplete
      */
     update() {
+      // mostly to prevent list being updated if user hits 'Enter'
+      if (!this.open)
+        return;
       const sel = this.quill.getSelection().index;
       const placeholders = this.getPlaceholders();
       const labels = placeholders.map(({ label }) => label.toLowerCase());
