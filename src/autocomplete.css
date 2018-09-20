@@ -1,5 +1,8 @@
 .suggest {
   font-weight: bold;
+  background: #ffefed;
+  border-radius: 4px;
+  padding: 3px;
   color: #fe5f55;
 }
 
@@ -42,6 +45,9 @@
 }
 .completions > li > button > .matched {
   font-weight: bold;
+  background: #ffefed;
+  border-radius: 2px;
+  padding: 2px;
   color: #fe5f55;
 }
 .completions > li > button > * {
