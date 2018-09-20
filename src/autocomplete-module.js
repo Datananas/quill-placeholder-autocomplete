@@ -31,7 +31,6 @@ export default (Quill) => {
       debounceTime = 0,
       triggerKey = '#'
     }) {
-      const bindedUpdateFn = this.update.bind(this);
 
       this.quill = quill;
       this.onClose = onClose;
@@ -40,6 +39,7 @@ export default (Quill) => {
       this.onFetchFinished = onFetchFinished;
       this.getPlaceholders = getPlaceholders;
       this.fetchPlaceholders = fetchPlaceholders;
+      this.debounceTime = debounceTime;
       this.triggerKey = triggerKey;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
@@ -54,8 +54,7 @@ export default (Quill) => {
       this.container.style.display = 'none';
       // prepare handlers and bind/unbind them when appropriate
       this.onSelectionChange = this.maybeUnfocus.bind(this);
-      this.onTextChange = debounceTime
-        ? debounce(bindedUpdateFn, debounceTime) : bindedUpdateFn;
+      this.onTextChange = this.update.bind(this);
 
       this.open = false;
       this.quill.suggestsDialogOpen = false;
@@ -223,8 +222,8 @@ export default (Quill) => {
       this.query = this.originalQuery.toLowerCase();
       // handle promise fetching custom placeholders
       if (this.fetchPlaceholders) {
-        this.handleAsyncFetching(placeholders, labels, fs)
-          .then(this.handleUpdateEnd.bind(this));
+        debounce(this.handleAsyncFetching(placeholders, labels, fs)
+          .then(this.handleUpdateEnd.bind(this)), this.debounceTime);
         return;
       }
 
@@ -239,6 +238,8 @@ export default (Quill) => {
      * @memberof AutoComplete
      */
     handleUpdateEnd({ placeholders, labels, fs }) {
+      if (!this.open)
+        return;
       let labelResults = fs.get(this.query);
       // FuzzySet can return a scores array or `null`
       labelResults = labelResults
