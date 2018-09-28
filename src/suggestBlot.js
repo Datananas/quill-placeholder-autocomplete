@@ -2,12 +2,12 @@ export default (Quill) => {
   const Inline = Quill.import('blots/inline');
 
   /**
- * Simple Inline Blot
- * used to buffer user query and provide UI behaviors around
- * @export
- * @class SuggestBlot
- * @extends {Inline}
- */
+   * Simple Inline Blot
+   * used to buffer user query and provide UI behaviors around
+   * @export
+   * @class SuggestBlot
+   * @extends {Inline}
+   */
   class SuggestBlot extends Inline {
     static create(id) {
       const node = super.create();
@@ -30,11 +30,11 @@ export default (Quill) => {
       return formats;
     }
   }
-  
+
   SuggestBlot.blotName = 'suggest';
   SuggestBlot.tagName = 'SPAN';
   SuggestBlot.className = 'suggest';
-  
+
   return SuggestBlot;
 };
 
