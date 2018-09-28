@@ -217,7 +217,7 @@ export default (Quill) => {
         return;
       const sel = this.quill.getSelection().index;
       const placeholders = this.getPlaceholders();
-      const labels = placeholders.map(({ label }) => label.toLowerCase());
+      const labels = placeholders.map(({ label }) => label);
       const fs = FuzzySet(labels, false);
       // user deleted the '#' character
       if (this.hashIndex >= sel) {
