@@ -227,7 +227,7 @@ export default (Quill) => {
       this.originalQuery = this.quill.getText(this.hashIndex + 1, sel - this.hashIndex - 1);
       this.query = this.originalQuery.toLowerCase();
       // handle promise fetching custom placeholders
-      if (this.fetchPlaceholders) {
+      if (this.fetchPlaceholders && !!this.query.length) {
         this.handleAsyncFetching(placeholders, labels, fs)
           .then(this.handleUpdateEnd.bind(this));
         return;
