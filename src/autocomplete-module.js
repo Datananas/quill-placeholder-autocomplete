@@ -29,7 +29,8 @@ export default (Quill) => {
       onFetchFinished,
       container,
       debounceTime = 0,
-      triggerKey = '#'
+      triggerKey = '#',
+      endKey
     }) {
       const bindedUpdateFn = this.update.bind(this);
 
@@ -41,6 +42,7 @@ export default (Quill) => {
       this.getPlaceholders = getPlaceholders;
       this.fetchPlaceholders = fetchPlaceholders;
       this.triggerKey = triggerKey;
+      this.endKey = endKey;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
       } else if (container === undefined) {
@@ -65,12 +67,12 @@ export default (Quill) => {
       this.matchedPlaceholders = [];
       this.toolbarHeight = 0;
 
-      this.suggestEnterDownHandler = function(event) {
-        if (event.key === 'Enter') {
+      this.suggestAcceptDownHandler = function(event) {
+        if (event.key === 'Enter' || this.endKey && event.key === this.endKey) {
           const sel = this.quill.getSelection().index;
           this.originalQuery = this.quill.getText(this.hashIndex + 1, sel - this.hashIndex - 1);
           this.query = this.originalQuery.toLowerCase();
-          this.handleEnterTab();
+          this.handleSuggestAccept();
           event.preventDefault();
         }
       }.bind(this);
@@ -157,7 +159,7 @@ export default (Quill) => {
       this.quill.once('selection-change', this.onSelectionChange);
       // binding handler to react when user pressed Enter
       // when autocomplete UI is in default state
-      this.quill.root.addEventListener('keydown', this.suggestEnterDownHandler);
+      this.quill.root.addEventListener('keydown', this.suggestAcceptDownHandler);
       this.update();
       this.onOpen && this.onOpen();
     }
@@ -175,20 +177,20 @@ export default (Quill) => {
     }
 
     /**
-     * Called on first user interaction
-     * with completions list on open
+     * Called when user accepts suggestion with the
+     * `Enter` key or `endKey` if provided.
      * @returns {Boolean} eventually stop propagation
      * @memberof AutoComplete
      */
-    handleEnterTab() {
+    handleSuggestAccept() {
       if (!this.open)
         return true;
       this.close(this.matchedPlaceholders[0]);
     }
 
     /**
-     * Called on first user interaction
-     * with completions list on open
+     * Called when user cancels autocomplete with
+     * the `Escape` key.
      * @returns {Boolean} eventually stop propagation
      * @memberof AutoComplete
      */
