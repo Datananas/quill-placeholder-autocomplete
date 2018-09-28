@@ -38,8 +38,9 @@ var quill = new Quill('#editor', {
     },
     autocomplete: {
       getPlaceholders: () => placeholders       // factory
-      container: '#completions',                // can also be return of `document.querySelector` or keeped `undefined`
+      container: '#completions',                // can also be return of `document.querySelector` or kept `undefined`
       triggerKey: '#',                          // default
+      endKey: '#',                              // optional
       debounceTime: 0,                          // 0: disabled (default)
       onOpen: () => console.log('opened'),                                      // optional
       onClose: (placeholder) => console.log('user choosed:', placeholder),      // optional
